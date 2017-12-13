@@ -3,6 +3,7 @@ package quote
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 
 	"google.golang.org/appengine"
 	"google.golang.org/appengine/datastore"
@@ -15,11 +16,16 @@ func init() {
 
 func handler(w http.ResponseWriter, r *http.Request) {
 	ctx := appengine.NewContext(r)
-	category := r.URL.Query().Get("category")
-	log.Debugf(ctx, "Category: %v", category)
+	query := r.URL.Query()
+	category := query.Get("category")
+	limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+	log.Debugf(ctx, "Category: %v, Limit: %v", category, limit)
 	q := datastore.NewQuery("Quote")
 	if len(category) != 0 {
 		q = q.Filter("Category =", category)
+	}
+	if limit > 0 {
+		q = q.Limit(limit)
 	}
 	// var quotes []Quote
 	var quotes = make([]Quote, 0)
